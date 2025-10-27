@@ -1276,6 +1276,11 @@ onBeforeUnmount(() => {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   min-width: 120px;
   box-sizing: border-box;
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.partition-segment:first-child {
+  border-left: none;
 }
 
 .partition-label {
