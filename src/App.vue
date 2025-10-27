@@ -283,6 +283,7 @@ const SUPPORTED_VENDORS = [
 ];
 
 const DEFAULT_ROM_BAUD = 115200;
+const DEBUG_SERIAL = false;
 
 const PACKAGE_LABELS = {
   ESP32: pkgVersion =>
@@ -502,7 +503,6 @@ const baudrateOptions = ['115200', '230400', '460800', '921600'];
 const flashOffset = ref('0x0');
 const eraseFlash = ref(false);
 const selectedPreset = ref(null);
-
 const logBuffer = ref('');
 const currentPort = ref(null);
 const transport = ref(null);
@@ -615,12 +615,14 @@ async function connect() {
     showBootDialog.value = false;
     currentPort.value = await navigator.serial.requestPort({ filters: SUPPORTED_VENDORS });
     const baudrate = Number.parseInt(selectedBaud.value, 10) || DEFAULT_ROM_BAUD;
-    transport.value = new Transport(currentPort.value);
+    transport.value = new Transport(currentPort.value, DEBUG_SERIAL);
+    transport.value.tracing = DEBUG_SERIAL;
     loader.value = new ESPLoader({
       transport: transport.value,
       baudrate,
       romBaudrate: DEFAULT_ROM_BAUD,
       terminal,
+      enableTracing: DEBUG_SERIAL,
     });
 
     const chipName = await loader.value.main('default_reset');
