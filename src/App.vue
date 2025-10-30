@@ -1126,6 +1126,26 @@ function clearLog() {
 let monitorDecoder = null;
 let monitorNoiseChunks = 0;
 let monitorNoiseWarned = false;
+let monitorAutoResetPerformed = false;
+
+async function releaseTransportReader() {
+  const transportInstance = transport.value;
+  const reader = transportInstance?.reader;
+  if (!reader) {
+    return;
+  }
+  try {
+    await reader.cancel();
+  } catch (err) {
+    appendLog(`Monitor reader cancel failed: ${err?.message || err}`, '[debug]');
+  }
+  try {
+    reader.releaseLock?.();
+  } catch (err) {
+    appendLog(`Monitor reader release failed: ${err?.message || err}`, '[debug]');
+  }
+  transportInstance.reader = null;
+}
 
 function appendMonitorChunk(bytes) {
   if (!bytes || !bytes.length) return;
@@ -1206,6 +1226,12 @@ async function startMonitor() {
     appendLog('Monitor unavailable: transport not ready.', '[warn]');
     return;
   }
+  if (!monitorAutoResetPerformed) {
+    await releaseTransportReader();
+    appendLog('Auto-resetting board before starting serial monitor output.', '[debug]');
+    await resetBoard({ silent: true });
+    monitorAutoResetPerformed = true;
+  }
   monitorError.value = null;
   monitorDecoder = new TextDecoder();
   monitorNoiseChunks = 0;
@@ -1234,11 +1260,7 @@ async function startMonitor() {
 async function stopMonitor() {
   if (!monitorActive.value) return;
   monitorAbortController.value?.abort();
-  try {
-    await transport.value?.flushInput?.();
-  } catch (err) {
-    appendLog(`Monitor stop flush failed: ${err?.message || err}`, '[warn]');
-  }
+  await releaseTransportReader();
   monitorActive.value = false;
   monitorAbortController.value = null;
   if (monitorDecoder) {
@@ -1252,13 +1274,16 @@ async function stopMonitor() {
   appendLog('Serial monitor stopped.', '[debug]');
 }
 
-async function resetBoard() {
+async function resetBoard(options = {}) {
+  const { silent = false } = options;
   if (!transport.value) {
     appendLog('Cannot reset: transport not available.', '[warn]');
     return;
   }
   try {
-    appendLog('Resetting board (toggle RTS).', '[debug]');
+    if (!silent) {
+      appendLog('Resetting board (toggle RTS).', '[debug]');
+    }
     await transport.value.setDTR(false);
     await transport.value.setRTS(true);
     await loader.value?.sleep?.(120);
@@ -1293,6 +1318,7 @@ async function disconnectTransport() {
       flashSizeBytes.value = null;
       monitorError.value = null;
       monitorText.value = '';
+      monitorAutoResetPerformed = false;
   }
 }
 
@@ -1304,6 +1330,7 @@ async function connect() {
   if (busy.value) return;
   busy.value = true;
   flashProgress.value = 0;
+  monitorAutoResetPerformed = false;
 
   logBuffer.value = '';
   partitionTable.value = [];
