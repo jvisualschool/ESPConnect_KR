@@ -140,6 +140,8 @@
                 :flash-read-length="flashReadLength"
                 :flash-read-status="flashReadStatus"
                 :flash-read-status-type="flashReadStatusType"
+                :partition-options="partitionDownloadOptions"
+                :selected-partition="selectedPartitionDownload"
                 @firmware-input="handleFirmwareInput"
                 @flash="flashFirmware"
                 @apply-preset="applyOffsetPreset"
@@ -152,7 +154,11 @@
                 @compute-md5="handleComputeMd5"
                 @update:flash-read-offset="value => (flashReadOffset.value = value)"
                 @update:flash-read-length="value => (flashReadLength.value = value)"
+                @update:selected-partition="handleSelectPartition"
                 @download-flash="handleDownloadFlash"
+                @download-partition="handleDownloadPartition"
+                @download-all-partitions="handleDownloadAllPartitions"
+                @download-used-flash="handleDownloadUsedFlash"
                 @erase-flash="handleEraseFlash"
               />
             </v-window-item>
@@ -651,6 +657,7 @@ const baudrateOptions = ['115200', '230400', '460800', '921600'];
 const flashOffset = ref('0x0');
 const eraseFlash = ref(false);
 const selectedPreset = ref(null);
+const selectedPartitionDownload = ref(null);
 const maintenanceBusy = ref(false);
 const registerAddress = ref('0x0');
 const registerValue = ref('');
@@ -1121,6 +1128,42 @@ const formattedPartitions = computed(() => {
   });
 
   return [...reservedRows, ...partitionRows].sort((a, b) => a.offset - b.offset);
+});
+
+const partitionDownloadOptions = computed(() => {
+  return formattedPartitions.value
+    .filter(row => !row.isUnused && row.size > 0)
+    .map(row => {
+      const baseLabel = row.label && row.label.trim() ? row.label.trim() : 'Partition ' + row.typeHex;
+      const displayLabel = baseLabel + ' • ' + row.offsetHex + ' • ' + row.sizeText;
+      return {
+        label: displayLabel,
+        value: row.offset,
+        offset: row.offset,
+        size: row.size,
+        offsetHex: row.offsetHex,
+        sizeText: row.sizeText,
+        baseLabel,
+        typeHex: row.typeHex,
+        subtypeHex: row.subtypeHex,
+      };
+    });
+});
+
+const partitionOptionLookup = computed(() => {
+  const map = new Map();
+  for (const option of partitionDownloadOptions.value) {
+    map.set(option.value, option);
+  }
+  return map;
+});
+
+watch(partitionDownloadOptions, options => {
+  if (!options.some(option => option.value === selectedPartitionDownload.value)) {
+    selectedPartitionDownload.value = null;
+    flashReadOffset.value = '0x0';
+    flashReadLength.value = '';
+  }
 });
 
 const connectionChipLabel = computed(() => {
@@ -1726,11 +1769,17 @@ function resetMaintenanceState() {
   registerStatusType.value = 'info';
   registerReadResult.value = null;
   registerValue.value = '';
+  registerAddress.value = '0x0';
   md5Result.value = null;
   md5Status.value = null;
   md5StatusType.value = 'info';
+  md5Offset.value = '0x0';
+  md5Length.value = '';
   flashReadStatus.value = null;
   flashReadStatusType.value = 'info';
+  flashReadOffset.value = '0x0';
+  flashReadLength.value = '';
+  selectedPartitionDownload.value = null;
 }
 
 async function handleReadRegister() {
@@ -1818,49 +1867,222 @@ async function handleComputeMd5() {
   }
 }
 
-async function handleDownloadFlash() {
+function sanitizeFileName(name, fallback) {
+  const base = name && name.trim() ? name.trim() : fallback;
+  return base
+    .replace(/[\/:*?"<>|]+/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 120);
+}
+
+async function downloadFlashRegion(offset, length, options = {}) {
+  if (!loader.value) {
+    throw new Error('Device not connected.');
+  }
+  if (!Number.isSafeInteger(offset) || offset < 0) {
+    throw new Error('Invalid flash offset.');
+  }
+  if (!Number.isSafeInteger(length) || length <= 0) {
+    throw new Error('Invalid flash length.');
+  }
+  if (flashSizeBytes.value && offset + length > flashSizeBytes.value) {
+    throw new Error('Requested region exceeds detected flash size.');
+  }
+
+  const { label, fileName, suppressStatus = false } = options;
+  const offsetHex = '0x' + offset.toString(16).toUpperCase();
+  const lengthHex = '0x' + length.toString(16).toUpperCase();
+  const displayLabel = label || 'flash region (' + offsetHex + ' / ' + lengthHex + ')';
+
+  if (!suppressStatus) {
+    flashReadStatusType.value = 'info';
+    flashReadStatus.value = 'Downloading ' + displayLabel + '...';
+  }
+
+  const buffer = await loader.value.readFlash(offset, length, (_packet, received, total) => {
+    if (!suppressStatus) {
+      flashReadStatusType.value = 'info';
+      flashReadStatus.value =
+        'Downloading ' +
+        displayLabel +
+        ': ' +
+        received.toLocaleString() +
+        ' of ' +
+        total.toLocaleString() +
+        ' bytes...';
+    }
+  });
+
+  const blob = new Blob([buffer], { type: 'application/octet-stream' });
+  const baseName =
+    fileName ||
+    sanitizeFileName((label || 'flash') + '_' + offsetHex + '_' + lengthHex, 'flash_' + offsetHex + '_' + lengthHex);
+  const finalName = baseName.endsWith('.bin') ? baseName : baseName + '.bin';
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = finalName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  if (!suppressStatus) {
+    flashReadStatusType.value = 'success';
+    flashReadStatus.value = 'Downloaded ' + finalName + ' (' + length.toLocaleString() + ' bytes).';
+  }
+  appendLog('Downloaded ' + displayLabel + ' to ' + finalName + '.', '[debug]');
+  return finalName;
+}
+
+async function handleDownloadFlash(payload = { mode: 'manual' }) {
   if (!loader.value) {
     flashReadStatus.value = 'Connect to a device first.';
     flashReadStatusType.value = 'warning';
     return;
   }
+  if (maintenanceBusy.value) {
+    return;
+  }
+  const mode = (payload && payload.mode) || 'manual';
   try {
     maintenanceBusy.value = true;
-    flashReadStatusType.value = 'info';
-    flashReadStatus.value = 'Preparing download...';
-    const offset = parseNumericInput(flashReadOffset.value, 'Flash offset');
-    const length = parseNumericInput(flashReadLength.value, 'Flash length');
-    if (length <= 0) {
-      throw new Error('Flash length must be greater than zero.');
+
+    if (mode === 'manual') {
+      const offset = parseNumericInput(flashReadOffset.value, 'Flash offset');
+      const length = parseNumericInput(flashReadLength.value, 'Flash length');
+      await downloadFlashRegion(offset, length, { label: 'manual flash region' });
+      return;
     }
-    const buffer = await loader.value.readFlash(offset, length, (_packet, received, total) => {
-      flashReadStatusType.value = 'info';
-      flashReadStatus.value = `Downloading ${received.toLocaleString()} of ${total.toLocaleString()} bytes...`;
-    });
-    const blob = new Blob([buffer], { type: 'application/octet-stream' });
-    const fileName = `esp32_flash_0x${offset.toString(16).toUpperCase()}_${length
-      .toString(16)
-      .toUpperCase()}.bin`;
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    flashReadStatusType.value = 'success';
-    flashReadStatus.value = `Downloaded ${length.toLocaleString()} bytes starting at 0x${offset
-      .toString(16)
-      .toUpperCase()}.`;
-    appendLog(`Downloaded flash region ${fileName}.`, '[debug]');
+
+    if (mode === 'partition') {
+      const option =
+        (payload && payload.partition) ||
+        partitionOptionLookup.value.get(selectedPartitionDownload.value);
+      if (!option) {
+        flashReadStatusType.value = 'warning';
+        flashReadStatus.value = 'Select a partition to download.';
+        return;
+      }
+      await downloadFlashRegion(option.offset, option.size, {
+        label: option.baseLabel,
+        fileName: sanitizeFileName(option.baseLabel + '_' + option.offsetHex, 'partition'),
+      });
+      return;
+    }
+
+    if (mode === 'all-partitions') {
+      const partitions = ((payload && payload.partitions) || partitionDownloadOptions.value).filter(
+        option => option.size > 0
+      );
+      if (!partitions.length) {
+        flashReadStatusType.value = 'warning';
+        flashReadStatus.value = 'No partitions available to download.';
+        return;
+      }
+      let completed = 0;
+      for (const option of partitions) {
+        completed += 1;
+        flashReadStatusType.value = 'info';
+        flashReadStatus.value =
+          'Downloading partition ' + completed + ' of ' + partitions.length + ': ' + option.baseLabel + '...';
+        await downloadFlashRegion(option.offset, option.size, {
+          label: option.baseLabel,
+          fileName: sanitizeFileName(option.baseLabel + '_' + option.offsetHex, 'partition'),
+          suppressStatus: true,
+        });
+      }
+      flashReadStatusType.value = 'success';
+      flashReadStatus.value =
+        'Downloaded ' + partitions.length + ' partition' + (partitions.length === 1 ? '' : 's') + '.';
+      return;
+    }
+
+    if (mode === 'used-flash') {
+      const usedSegments = partitionSegments.value.filter(segment => !segment.isUnused);
+      if (!usedSegments.length) {
+        flashReadStatusType.value = 'warning';
+        flashReadStatus.value = 'No flash usage detected.';
+        return;
+      }
+      const minOffset = usedSegments.reduce(
+        (min, segment) => Math.min(min, segment.offset),
+        usedSegments[0].offset
+      );
+      const maxEnd = usedSegments.reduce(
+        (max, segment) => Math.max(max, segment.offset + segment.size),
+        usedSegments[0].offset + usedSegments[0].size
+      );
+      const length = maxEnd - minOffset;
+      await downloadFlashRegion(minOffset, length, {
+        label: 'used flash',
+        fileName: sanitizeFileName('used_flash_' + ('0x' + minOffset.toString(16).toUpperCase()), 'used_flash'),
+      });
+      return;
+    }
+
+    if (mode === 'custom') {
+      const offset = payload && payload.offset;
+      const length = payload && payload.length;
+      if (!Number.isInteger(offset) || !Number.isInteger(length)) {
+        throw new Error('Custom download requires numeric offset and length.');
+      }
+      await downloadFlashRegion(offset, length, {
+        label: payload && payload.label,
+        fileName: payload && payload.fileName,
+      });
+      return;
+    }
+
+    flashReadStatusType.value = 'warning';
+    flashReadStatus.value = 'Unsupported download mode.';
   } catch (error) {
     flashReadStatusType.value = 'error';
-    flashReadStatus.value = `Download failed: ${error?.message || error}`;
+    flashReadStatus.value = 'Download failed: ' + (error && error.message ? error.message : error);
   } finally {
     maintenanceBusy.value = false;
   }
 }
+
+async function handleDownloadPartition() {
+  const option = partitionOptionLookup.value.get(selectedPartitionDownload.value);
+  if (!option) {
+    flashReadStatusType.value = 'warning';
+    flashReadStatus.value = 'Select a partition to download.';
+    return;
+  }
+  await handleDownloadFlash({ mode: 'partition', partition: option });
+}
+
+async function handleDownloadAllPartitions() {
+  const partitions = partitionDownloadOptions.value.filter(option => option.size > 0);
+  if (!partitions.length) {
+    flashReadStatusType.value = 'warning';
+    flashReadStatus.value = 'No partitions available to download.';
+    return;
+  }
+  await handleDownloadFlash({ mode: 'all-partitions', partitions });
+}
+
+async function handleDownloadUsedFlash() {
+  await handleDownloadFlash({ mode: 'used-flash' });
+}
+
+function handleSelectPartition(value) {
+  selectedPartitionDownload.value = value;
+  const option = partitionOptionLookup.value.get(value);
+  if (option) {
+    flashReadOffset.value = option.offsetHex;
+    flashReadLength.value = '0x' + option.size.toString(16).toUpperCase();
+  } else {
+    flashReadOffset.value = '0x0';
+    flashReadLength.value = '';
+  }
+}
+
 
 async function handleEraseFlash(payload = { mode: 'full' }) {
   if (!loader.value) {

@@ -178,13 +178,56 @@
         >
           <v-icon start>mdi-delete-sweep</v-icon>
           Erase Entire Flash
-        </v-btn>
+    </v-btn>
+  </div>
+      <v-divider v-if="partitionOptions.length" class="my-4" />
+      <div v-if="partitionOptions.length" class="partition-tools">
+        <v-select
+          :model-value="selectedPartition"
+          :items="partitionOptions"
+          item-title="label"
+          item-value="value"
+          label="Partition"
+          density="comfortable"
+          clearable
+          :disabled="busy || maintenanceBusy"
+          @update:model-value="value => emit('update:selectedPartition', value)"
+        />
+        <div class="tools-card__actions partition-tools__actions">
+          <v-btn
+            color="primary"
+            variant="tonal"
+            :disabled="busy || maintenanceBusy || !selectedPartition"
+            @click="emit('download-partition')"
+          >
+            <v-icon start>mdi-download-multiple</v-icon>
+            Download Selected Partition
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="text"
+            :disabled="busy || maintenanceBusy"
+            @click="emit('download-all-partitions')"
+          >
+            <v-icon start>mdi-select-group</v-icon>
+            Download All Partitions
+          </v-btn>
+          <v-btn
+            color="secondary"
+            variant="text"
+            :disabled="busy || maintenanceBusy"
+            @click="emit('download-used-flash')"
+          >
+            <v-icon start>mdi-content-save</v-icon>
+            Download Used Flash
+          </v-btn>
+        </div>
       </div>
-      <v-alert
-        v-if="flashReadStatus"
-        :type="flashReadStatusType"
-        variant="tonal"
-        density="comfortable"
+  <v-alert
+    v-if="flashReadStatus"
+    :type="flashReadStatusType"
+    variant="tonal"
+    density="comfortable"
         border="start"
         class="mt-3"
       >
@@ -359,6 +402,14 @@ defineProps({
     type: String,
     default: 'info',
   },
+  partitionOptions: {
+    type: Array,
+    default: () => [],
+  },
+  selectedPartition: {
+    type: [String, Number],
+    default: null,
+  },
 });
 
 const emit = defineEmits([
@@ -377,7 +428,11 @@ const emit = defineEmits([
   'compute-md5',
   'update:flashReadOffset',
   'update:flashReadLength',
+  'update:selectedPartition',
   'download-flash',
+  'download-partition',
+  'download-all-partitions',
+  'download-used-flash',
   'erase-flash',
 ]);
 
@@ -412,5 +467,15 @@ function handlePresetChange(value) {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.partition-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.partition-tools__actions {
+  justify-content: flex-start;
 }
 </style>
