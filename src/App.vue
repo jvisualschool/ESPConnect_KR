@@ -169,6 +169,7 @@
                 :can-flash="canFlash"
                 :flash-in-progress="flashInProgress"
                 :flash-progress="flashProgress"
+                :flash-progress-dialog="flashProgressDialog"
                 :maintenance-busy="maintenanceBusy"
                 :register-address="registerAddress"
                 :register-value="registerValue"
@@ -206,6 +207,7 @@
                 @download-partition="handleDownloadPartition"
                 @download-all-partitions="handleDownloadAllPartitions"
                 @download-used-flash="handleDownloadUsedFlash"
+                @cancel-flash="handleCancelFlash"
                 @erase-flash="handleEraseFlash"
                 @cancel-download="handleCancelDownload"
                 @select-register="handleSelectRegister"
@@ -743,6 +745,8 @@ const connected = ref(false);
 const busy = ref(false);
 const flashInProgress = ref(false);
 const flashProgress = ref(0);
+const flashProgressDialog = reactive({ visible: false, value: 0, label: '' });
+const flashCancelRequested = ref(false);
 const selectedBaud = ref('115200');
 const baudrateOptions = ['115200', '230400', '460800', '921600'];
 const flashOffset = ref('0x0');
@@ -2035,8 +2039,12 @@ async function flashFirmware() {
   flashInProgress.value = true;
   busy.value = true;
   flashProgress.value = 0;
+  flashCancelRequested.value = false;
+  flashProgressDialog.visible = true;
+  flashProgressDialog.value = 0;
+  flashProgressDialog.label = `Preparing ${firmwareLabel}...`;
 
-  appendLog(`Flashing ${firmwareName.value} at 0x${offsetNumber.toString(16)}...`);
+  appendLog(`Flashing ${firmwareLabel} at 0x${offsetNumber.toString(16)}...`);
 
   try {
     const bytes = new Uint8Array(firmwareBuffer.value);
@@ -2051,20 +2059,41 @@ async function flashFirmware() {
       eraseAll: eraseFlash.value,
       compress: true,
       reportProgress: (_fileIndex, written, total) => {
+        if (flashCancelRequested.value) {
+          throw new Error('Flash cancelled by user');
+        }
         const pct = total ? Math.floor((written / total) * 100) : 0;
-        flashProgress.value = Math.min(100, Math.max(0, pct));
+        const clamped = Math.min(100, Math.max(0, pct));
+        flashProgress.value = clamped;
+        flashProgressDialog.visible = true;
+        flashProgressDialog.value = clamped;
+        const writtenLabel = written.toLocaleString();
+        const totalLabel = total ? total.toLocaleString() : '';
+        flashProgressDialog.label = total
+          ? `Flashing ${firmwareLabel} — ${writtenLabel} of ${totalLabel} bytes`
+          : `Flashing ${firmwareLabel} — ${writtenLabel} bytes`;
       },
     });
 
     await loader.value.after('hard_reset');
     const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-  appendLog(`Flashing complete in ${elapsed}s. Device rebooted.`);
+    flashProgressDialog.value = 100;
+    flashProgressDialog.label = `Flash complete in ${elapsed}s. Finalizing...`;
+    appendLog(`Flashing complete in ${elapsed}s. Device rebooted.`);
   } catch (error) {
-    appendLog(`Flashing failed: ${error?.message || error}`, '[error]');
+    if (error?.message === 'Flash cancelled by user') {
+      appendLog('Flash cancelled by user.', '[warn]');
+    } else {
+      appendLog(`Flashing failed: ${error?.message || error}`, '[error]');
+    }
   } finally {
     flashProgress.value = 0;
     flashInProgress.value = false;
     busy.value = false;
+    flashCancelRequested.value = false;
+    flashProgressDialog.visible = false;
+    flashProgressDialog.value = 0;
+    flashProgressDialog.label = '';
   }
 }
 
@@ -2087,6 +2116,10 @@ function resetMaintenanceState() {
   flashReadOffset.value = '0x0';
   flashReadLength.value = '';
   selectedPartitionDownload.value = null;
+  flashProgressDialog.visible = false;
+  flashProgressDialog.value = 0;
+  flashProgressDialog.label = '';
+  flashCancelRequested.value = false;
   downloadProgress.visible = false;
   downloadProgress.value = 0;
   downloadProgress.label = '';
@@ -2521,6 +2554,17 @@ async function handleDownloadAllPartitions() {
 
 async function handleDownloadUsedFlash() {
   await handleDownloadFlash({ mode: 'used-flash' });
+}
+
+function handleCancelFlash() {
+  if (!flashInProgress.value) {
+    return;
+  }
+  if (!flashCancelRequested.value) {
+    flashCancelRequested.value = true;
+    flashProgressDialog.label = 'Stopping flash...';
+    appendLog('Flash cancellation requested by user.', '[warn]');
+  }
 }
 
 function handleCancelDownload() {

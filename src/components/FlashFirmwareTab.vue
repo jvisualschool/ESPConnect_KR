@@ -66,18 +66,6 @@
     Flash Firmware
   </v-btn>
 
-  <v-progress-linear
-    v-if="flashInProgress"
-    class="mt-4"
-    :model-value="flashProgress"
-    color="primary"
-    height="12"
-    rounded
-    striped
-  >
-    <strong>{{ flashProgress }}%</strong>
-  </v-progress-linear>
-
   <v-divider class="my-6" />
 
   <v-card class="tools-card" variant="tonal">
@@ -372,6 +360,43 @@
     </v-card-text>
   </v-card>
   <v-dialog
+    :model-value="flashProgressDialog.visible"
+    persistent
+    max-width="420"
+    class="progress-dialog"
+  >
+    <v-card class="progress-dialog__card">
+      <v-card-title class="progress-dialog__title">
+        <v-icon start color="primary">mdi-lightning-bolt</v-icon>
+        Flash in progress
+      </v-card-title>
+      <v-card-text class="progress-dialog__body">
+        <div class="progress-dialog__label">
+          {{ flashProgressDialog.label || 'Preparing flash...' }}
+        </div>
+        <v-progress-linear
+          :model-value="flashProgressDialog.value"
+          height="24"
+          color="primary"
+          rounded
+          striped
+        />
+      </v-card-text>
+      <v-card-actions class="progress-dialog__actions">
+        <v-spacer />
+        <v-btn
+          color="secondary"
+          variant="tonal"
+          :disabled="!flashInProgress"
+          @click="emit('cancel-flash')"
+        >
+          <v-icon start>mdi-stop</v-icon>
+          Stop
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-dialog
     :model-value="downloadProgress.visible"
     persistent
     max-width="420"
@@ -444,6 +469,10 @@ const props = defineProps({
   flashProgress: {
     type: Number,
     required: true,
+  },
+  flashProgressDialog: {
+    type: Object,
+    default: () => ({ visible: false, value: 0, label: '' }),
   },
   maintenanceBusy: {
     type: Boolean,
@@ -548,6 +577,7 @@ const emit = defineEmits([
   'download-partition',
   'download-all-partitions',
   'download-used-flash',
+  'cancel-flash',
   'erase-flash',
   'cancel-download',
   'select-register',
