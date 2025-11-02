@@ -60,7 +60,7 @@
       </v-chip>
     </v-app-bar>
     <v-main>
-      <v-container>
+      <v-container fluid>
         <v-card elevation="8" class="pa-6">
           <v-alert v-if="!serialSupported" type="error" class="mb-4" variant="tonal" icon="mdi-alert-circle-outline">
             This browser does not support the Web Serial API. Use Chrome, Edge, or another Chromium-based browser.
