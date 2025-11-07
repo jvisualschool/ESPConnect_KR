@@ -217,6 +217,23 @@
           </v-card>
         </v-dialog>
 
+        <v-dialog :model-value="spiffsRestoreDialog.visible" persistent max-width="420" class="progress-dialog">
+          <v-card>
+            <v-card-title class="text-h6">
+              <v-icon start color="primary">mdi-backup-restore</v-icon>
+              Restoring SPIFFS
+            </v-card-title>
+            <v-card-text class="progress-dialog__body">
+              <div class="progress-dialog__label">
+                {{ spiffsRestoreDialog.label || 'Writing SPIFFS image...' }}
+              </div>
+              <v-progress-linear :model-value="spiffsRestoreDialog.value" height="24" color="primary" rounded>
+                <strong>{{ Math.min(100, Math.max(0, Math.floor(spiffsRestoreDialog.value))) }}%</strong>
+              </v-progress-linear>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+
         <v-dialog v-model="showBootDialog" width="420">
           <v-card>
             <v-card-title class="text-h6">
@@ -846,7 +863,13 @@ async function handleSpiffsRestore(file) {
   try {
     spiffsState.saving = true;
     maintenanceBusy.value = true;
-    await writeSpiffsImage(partition, buffer);
+    spiffsRestoreDialog.visible = true;
+    spiffsRestoreDialog.value = 0;
+    spiffsRestoreDialog.label = 'Writing SPIFFS image...';
+    await writeSpiffsImage(partition, buffer, progress => {
+      spiffsRestoreDialog.value = progress.value ?? 0;
+      spiffsRestoreDialog.label = progress.label || 'Writing SPIFFS image...';
+    });
     spiffsState.status = 'SPIFFS image restored.';
     spiffsState.backupDone = true;
     appendLog('SPIFFS partition restored from backup.', '[debug]');
@@ -857,6 +880,9 @@ async function handleSpiffsRestore(file) {
   } finally {
     spiffsState.saving = false;
     maintenanceBusy.value = false;
+    spiffsRestoreDialog.visible = false;
+    spiffsRestoreDialog.value = 0;
+    spiffsRestoreDialog.label = 'Restoring SPIFFS image...';
   }
 }
 
@@ -1004,7 +1030,10 @@ async function handleSpiffsSave() {
     if (image.length > partition.size) {
       throw new Error('SPIFFS image exceeds partition size.');
     }
-    await writeSpiffsImage(partition, image);
+    await writeSpiffsImage(partition, image, progress => {
+      spiffsSaveDialog.value = progress.value ?? 0;
+      spiffsSaveDialog.label = progress.label || 'Writing SPIFFS image...';
+    });
     spiffsState.dirty = false;
     spiffsState.status = 'SPIFFS saved to flash.';
     appendLog('SPIFFS partition updated on flash.', '[debug]');
@@ -1021,7 +1050,7 @@ async function handleSpiffsSave() {
   }
 }
 
-async function writeSpiffsImage(partition, image) {
+async function writeSpiffsImage(partition, image, onProgress) {
   if (!loader.value) {
     throw new Error('Loader unavailable.');
   }
@@ -1036,9 +1065,14 @@ async function writeSpiffsImage(partition, image) {
     compress: true,
     reportProgress: (_fileIndex, written, total) => {
       const progressValue = total ? Math.min(100, Math.floor((written / total) * 100)) : 0;
-      spiffsState.status = `Writing SPIFFS... ${written.toLocaleString()} / ${total.toLocaleString()} bytes`;
-      spiffsSaveDialog.value = progressValue;
-      spiffsSaveDialog.label = `Writing SPIFFS... ${written.toLocaleString()} / ${total.toLocaleString()} bytes`;
+      const label = `Writing SPIFFS... ${written.toLocaleString()} / ${total.toLocaleString()} bytes`;
+      spiffsState.status = label;
+      onProgress?.({
+        value: progressValue,
+        label,
+        written,
+        total,
+      });
     },
   });
 }
@@ -1224,6 +1258,11 @@ const spiffsSaveDialog = reactive({
   visible: false,
   value: 0,
   label: 'Saving SPIFFS...',
+});
+const spiffsRestoreDialog = reactive({
+  visible: false,
+  value: 0,
+  label: 'Restoring SPIFFS image...',
 });
 const spiffsPartitions = computed(() =>
   partitionTable.value

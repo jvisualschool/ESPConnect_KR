@@ -101,7 +101,6 @@
           recover if something goes wrong.
         </p>
       </v-card-text>
-      <v-progress-linear v-if="loading || saving" indeterminate color="primary" />
     </v-card>
 
     <v-card variant="tonal">
