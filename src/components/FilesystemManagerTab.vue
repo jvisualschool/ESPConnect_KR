@@ -100,7 +100,7 @@
             </v-col>
           </v-row>
         </div>
-
+        <v-divider :thickness="2" class="mt-3"></v-divider>
         <v-alert v-if="!files.length" type="info" variant="tonal" density="comfortable" border="start" class="mt-4">
           {{ emptyMessage }}
         </v-alert>
