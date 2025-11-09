@@ -17,14 +17,16 @@
       </v-btn>
     </v-card-title>
     <v-divider></v-divider>
-    <v-card-text class="log-surface">
+    <v-card-text class="log-surface" ref="logSurface">
       <pre class="log-output">{{ logText || 'Logs will appear here once actions begin.' }}</pre>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup>
-defineProps({
+import { nextTick, ref, watch } from 'vue';
+
+const props = defineProps({
   logText: {
     type: String,
     default: '',
@@ -32,6 +34,27 @@ defineProps({
 });
 
 const emit = defineEmits(['clear-log']);
+
+const logSurface = ref(null);
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (logSurface.value) {
+      logSurface.value.scrollTop = logSurface.value.scrollHeight;
+    }
+  });
+}
+
+watch(
+  () => props.logText,
+  () => {
+    scrollToBottom();
+  }
+);
+
+defineExpose({
+  scrollToBottom,
+});
 </script>
 
 <style scoped>

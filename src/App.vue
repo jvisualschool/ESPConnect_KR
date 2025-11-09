@@ -188,7 +188,7 @@
             </v-window-item>
 
             <v-window-item value="log">
-              <SessionLogTab :log-text="logText" @clear-log="clearLog" />
+              <SessionLogTab ref="sessionLogRef" :log-text="logText" @clear-log="clearLog" />
             </v-window-item>
 
             <v-window-item value="about">
@@ -3421,6 +3421,7 @@ const firmwareName = ref('');
 const chipDetails = ref(null);
 const partitionTable = ref([]);
 const activeTab = ref('info');
+const sessionLogRef = ref(null);
 const navigationItems = computed(() => [
   { title: 'Device Info', value: 'info', icon: 'mdi-information-outline', disabled: false },
   { title: 'Partitions', value: 'partitions', icon: 'mdi-table', disabled: false },
@@ -3458,6 +3459,15 @@ const navigationItems = computed(() => [
     disabled: false,
   },
 ]);
+
+watch(
+  activeTab,
+  value => {
+    if (value === 'log') {
+      sessionLogRef.value?.scrollToBottom?.();
+    }
+  }
+);
 
 const resourceLinks = [
   {
