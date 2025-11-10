@@ -3480,7 +3480,7 @@ const navigationItems = computed(() => [
     icon: 'mdi-alpha-f-circle-outline',
     disabled: !connected.value || !fatfsAvailable.value,
   },
-  { title: 'Firmware Tools', value: 'flash', icon: 'mdi-chip', disabled: !connected.value },
+  { title: 'Flash Tools', value: 'flash', icon: 'mdi-chip', disabled: !connected.value },
   { title: 'Serial Monitor', value: 'console', icon: 'mdi-console-line', disabled: false },
   { title: 'Session Log', value: 'log', icon: 'mdi-clipboard-text-outline', disabled: false },
   {
