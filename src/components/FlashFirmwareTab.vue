@@ -9,29 +9,7 @@
       </span>
     </template>
     <v-card-text class="tools-card__body">
-      <v-row dense>
-        <v-col cols="12" md="6">
-          <v-text-field :model-value="flashReadOffset" label="Start offset" placeholder="0x0" density="comfortable"
-            :disabled="busy || maintenanceBusy" @update:model-value="value => emit('update:flashReadOffset', value)" />
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field :model-value="flashReadLength" label="Length (bytes)" placeholder="0x100000"
-            density="comfortable" :disabled="busy || maintenanceBusy"
-            @update:model-value="value => emit('update:flashReadLength', value)" />
-        </v-col>
-      </v-row>
-      <div class="tools-card__actions">
-        <v-btn color="primary" variant="tonal" :disabled="busy || maintenanceBusy" @click="emit('download-flash')">
-          <v-icon start>mdi-download-box</v-icon>
-          Download Flash Region
-        </v-btn>
-        <v-btn color="error" variant="outlined" :disabled="busy || maintenanceBusy"
-          @click="emit('erase-flash', { mode: 'full' })">
-          <v-icon start>mdi-delete-sweep</v-icon>
-          Erase Entire Flash
-        </v-btn>
-      </div>
-      <v-divider v-if="partitionOptions.length" class="my-4" />
+
       <div v-if="partitionOptions.length" class="partition-tools">
         <v-select :model-value="selectedPartition" :items="partitionOptions" item-title="label" item-value="value"
           label="Partition" density="comfortable" clearable :disabled="busy || maintenanceBusy"
@@ -68,6 +46,29 @@
             Download Used Flash
           </v-btn>
         </div>
+      </div>
+      <v-divider v-if="partitionOptions.length" class="my-4" />
+      <v-row dense>
+        <v-col cols="12" md="6">
+          <v-text-field :model-value="flashReadOffset" label="Start offset" placeholder="0x0" density="comfortable"
+            :disabled="busy || maintenanceBusy" @update:model-value="value => emit('update:flashReadOffset', value)" />
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-text-field :model-value="flashReadLength" label="Length (bytes)" placeholder="0x100000"
+            density="comfortable" :disabled="busy || maintenanceBusy"
+            @update:model-value="value => emit('update:flashReadLength', value)" />
+        </v-col>
+      </v-row>
+      <div class="tools-card__actions">
+        <v-btn color="primary" variant="tonal" :disabled="busy || maintenanceBusy" @click="emit('download-flash')">
+          <v-icon start>mdi-download-box</v-icon>
+          Download Flash Region
+        </v-btn>
+        <v-btn color="error" variant="outlined" :disabled="busy || maintenanceBusy"
+          @click="emit('erase-flash', { mode: 'full' })">
+          <v-icon start>mdi-delete-sweep</v-icon>
+          Erase Entire Flash
+        </v-btn>
       </div>
       <v-alert v-if="flashReadStatus" :type="flashReadStatusType" variant="tonal" density="comfortable" border="start"
         class="mt-3">
