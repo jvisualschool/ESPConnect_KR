@@ -4846,6 +4846,12 @@ async function connect() {
       pushFact('eFuse Block Version', `v${blockVersionMajor}.${blockVersionMinor}`);
     }
 
+    try {
+      await transport.value?.flushInput();
+    } catch (err) {
+      appendLog(`Warning: failed to flush serial input before partition read (${formatErrorMessage(err)}).`, '[ESPConnect-Warn]');
+    }
+
     connectDialog.message = `Reading partition table...`;
     if (chip?.CHIP_NAME === 'ESP8266') {
       appendLog('Skipping partition table read for ESP8266 (not supported).', '[ESPConnect-Debug]');

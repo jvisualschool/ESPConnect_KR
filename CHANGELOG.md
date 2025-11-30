@@ -2,6 +2,7 @@
 
 ## 1.0.5
 - Added PWM/LEDC capabilities to Device Info with tooltip context; values are based on chip family lookups. Proposed in ([issue #16](https://github.com/thelastoutpostworkshop/ESPConnect/issues/16)).
+- Flush serial input before partition reads to avoid stale data when swapping boards.
 - Added a Dockerfile
 
 ## 1.0.4
