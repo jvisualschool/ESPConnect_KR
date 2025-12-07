@@ -654,7 +654,7 @@ import {
 } from './constants/app';
 import { PACKAGE_LABELS, ECO_LABELS, EMBEDDED_FLASH_CAPACITY, EMBEDDED_PSRAM_CAPACITY, PACKAGE_FORM_FACTORS } from './constants/chipLabels';
 import { JEDEC_FLASH_PARTS, JEDEC_MANUFACTURERS, VENDOR_ALIASES } from './constants/flashIds';
-import { USB_PRODUCT_NAMES, USB_VENDOR_NAMES } from './constants/usb';
+import { getUsbDeviceInfo } from './constants/usb';
 import { FACT_DISPLAY_ORDER, FACT_GROUP_CONFIG, FACT_ICONS } from './constants/deviceFacts';
 import { findChipDocs } from './constants/chipDocsLinks';
 import { PWM_TABLE } from './utils/pwm-capabilities-table';
@@ -2320,19 +2320,25 @@ function formatUsbBridge(info) {
     typeof info.usbProductId === 'number'
       ? `0x${info.usbProductId.toString(16).padStart(4, '0').toUpperCase()}`
       : null;
-  const vendorName = USB_VENDOR_NAMES[info.usbVendorId] ?? `Vendor ${vendorHex}`;
-  const productKey =
+  const deviceInfo =
     typeof info.usbProductId === 'number'
-      ? `${info.usbVendorId.toString(16).toUpperCase()}:${info.usbProductId.toString(16).toUpperCase()}`
-      : null;
-  const productName = productKey ? USB_PRODUCT_NAMES[productKey] : null;
-  if (productName && productHex) {
-    return `${vendorName} - ${productName} (${productHex})`;
+      ? getUsbDeviceInfo(info.usbVendorId, info.usbProductId)
+      : undefined;
+  if (!deviceInfo) {
+    return productHex ? `${vendorHex}:${productHex}` : vendorHex;
   }
+  const parts = [];
+  if (deviceInfo.vendorName) {
+    parts.push(deviceInfo.vendorName);
+  }
+  if (deviceInfo.productName) {
+    parts.push(deviceInfo.productName);
+  }
+  let label = parts.join(' - ');
   if (productHex) {
-    return `${vendorName} (${productHex})`;
+    label = label ? `${label} (${productHex})` : productHex;
   }
-  return vendorName;
+  return label || vendorHex;
 }
 
 // Trigger a binary download on the host.

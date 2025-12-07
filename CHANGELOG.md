@@ -5,6 +5,7 @@
 - Automatically lower baud to 460,800 when a CH340 USB bridge is detected and notify the user ([issue #47](https://github.com/thelastoutpostworkshop/ESPConnect/issues/47)).
 - Fixed the restauration of baud rate after stopping the serial monitor
 - Added a pause/resume control to the Serial Monitor to temporarily freeze log output.
+- Added more usb bridge information detection
 
 ## 1.0.7
 - Switched flashing to use [WebSerial_ESPTool](https://github.com/Jason2866/WebSerial_ESPTool/tree/development) by Jason2866
