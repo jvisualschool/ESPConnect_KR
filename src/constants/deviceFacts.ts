@@ -64,7 +64,17 @@ export const FACT_GROUP_CONFIG = [
   {
     title: 'Security',
     icon: 'mdi-shield-key-outline',
-    labels: ['eFuse Block Version', 'Security information'],
+    labels: ['eFuse Block Version',
+      'Flash Encryption',
+      'Flash Encryption Details',
+      'Flash Encryption Mode',
+      'Secure Boot',
+      'Secure Boot Type',
+      'JTAG Protection',
+      'USB Protection',
+      'Download-Mode Caches',
+      'Security Note'
+    ],
   },
   {
     title: 'Peripherals',
