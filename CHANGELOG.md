@@ -6,7 +6,7 @@
 - Fixed the restauration of baud rate after stopping the serial monitor
 - Added a pause/resume control to the Serial Monitor to temporarily freeze log output.
 - Added more usb bridge information detection
-- Added more info from MCUs
+- Added more info from sevetal MCUs (ESP8266, ESP32, ESP32-P4, ESP32-H2, ESP32-C61, ESP32-C5, ESP32-C2 and ESP32-C6)
 
 ## 1.0.7
 - Switched flashing to use [WebSerial_ESPTool](https://github.com/Jason2866/WebSerial_ESPTool/tree/development) by Jason2866
