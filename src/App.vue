@@ -5149,7 +5149,7 @@ async function connect() {
       connectDialog.visible = true;
     }, TIMEOUT_CONNECT);
     let desiredBaud = Number.parseInt(selectedBaud.value, 10) || DEFAULT_FLASH_BAUD;
-    const connectBaud = DEFAULT_ROM_BAUD;
+    const connectBaud_defaultROM = DEFAULT_ROM_BAUD;
     lastFlashBaud.value = desiredBaud;
     const portDetails = currentPort.value?.getInfo ? currentPort.value.getInfo() : null;
     const usbBridge = portDetails ? formatUsbBridge(portDetails) : "Unknown";
@@ -5185,8 +5185,8 @@ async function connect() {
     });
     transport.value = esptool.transport;
     loader.value = esptool.loader;
-    currentBaud.value = connectBaud;
-    transport.value.baudrate = connectBaud;
+    currentBaud.value = connectBaud_defaultROM;
+    transport.value.baudrate = connectBaud_defaultROM;
 
     try {
       await transport.value.flushInput();
@@ -5197,7 +5197,7 @@ async function connect() {
 
     connectDialog.message = 'Handshaking with ROM bootloader...';
     const { chipName, macAddress: handshakeMac, securityFacts } = await esptool.connectAndHandshake();
-    currentBaud.value = desiredBaud || connectBaud;
+    currentBaud.value = desiredBaud || connectBaud_defaultROM;
     transport.value.baudrate = currentBaud.value;
     const previousSuspendState = suspendBaudWatcher;
     suspendBaudWatcher = true;
