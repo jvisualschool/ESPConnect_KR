@@ -5316,10 +5316,10 @@ async function connect() {
     );
 
     connectDialog.message = `Preparing information...`;
-    const featureList = Array.isArray(featuresRaw)
-      ? featuresRaw
+    const featureList: string[] = Array.isArray(featuresRaw)
+      ? (featuresRaw as string[])
       : typeof featuresRaw === 'string'
-        ? featuresRaw.split(/,\s*/)
+        ? (featuresRaw as string).split(/,\s*/)
         : [];
 
     const crystalLabel =
