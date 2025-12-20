@@ -299,7 +299,7 @@ function detectNvsVersionFromPages(data: Uint8Array) {
     }
 
     const stored = readUint32Le(view, 28);
-    const calc = crc32Le(0xffffffff, page, 4, 24);
+    const calc = nvsCrc32(page, 4, 24);
     if (stored !== calc) continue;
     validHeaders += 1;
 
@@ -326,13 +326,33 @@ export function detectNvsVersion(data: Uint8Array): NvsDetectResult {
   return detectNvsVersionFromPages(data);
 }
 
-function computeItemCrc32(itemBytes: Uint8Array) {
-  let crc = 0xffffffff;
-  crc = crc32Le(crc, itemBytes, 0, 4);
-  crc = crc32Le(crc, itemBytes, 8, 16);
-  crc = crc32Le(crc, itemBytes, 24, 8);
-  return crc >>> 0;
+function crc32Update(crc: number, data: Uint8Array, start = 0, length = data.length - start) {
+  let c = crc >>> 0;
+  const end = Math.min(data.length, start + length);
+  for (let i = start; i < end; i += 1) {
+    c = CRC32_TABLE[(c ^ data[i]) & 0xff] ^ (c >>> 8);
+  }
+  return c >>> 0;
 }
+
+function crc32Finalize(crc: number) {
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+// This matches what your NVS header CRC expects:
+function nvsCrc32(data: Uint8Array, start = 0, length = data.length - start) {
+  const crc = crc32Update(0x00000000, data, start, length);
+  return crc32Finalize(crc);
+}
+
+function computeItemCrc32(itemBytes: Uint8Array) {
+  let crc = 0x00000000;
+  crc = crc32Update(crc, itemBytes, 0, 4);
+  crc = crc32Update(crc, itemBytes, 8, 16);
+  crc = crc32Update(crc, itemBytes, 24, 8);
+  return crc32Finalize(crc);
+}
+
 
 function combineCrcOk(itemCrcOk: boolean | undefined, dataCrcOk: boolean | undefined) {
   if (itemCrcOk === false || dataCrcOk === false) return false;
@@ -530,7 +550,7 @@ function parseWithVersion(data: Uint8Array, version: NvsVersion): NvsParseResult
         }
 
         if (!truncated) {
-          const calcDataCrc = crc32Le(0xffffffff, data);
+          const calcDataCrc = nvsCrc32(data);
           dataCrcOk = calcDataCrc === storedDataCrc;
           if (!dataCrcOk) {
             warningsForItem.push(
