@@ -37,6 +37,27 @@
       '此浏览器不支持 Web Serial API。请使用 Chrome、Edge 或其他基于 Chromium 的浏览器。',
     serialMonitorClosed: '串口监视器已关闭 - 单击“连接”重新进入维护模式。',
   },
+  serialMonitor: {
+    title: '串口监视器',
+    status: {
+      live: '正在运行',
+      stopped: '已停止',
+    },
+    actions: {
+      start: '开始',
+      stop: '停止',
+      pause: '暂停',
+      resume: '继续',
+      clear: '清除',
+      reset: '复位',
+    },
+    filterPlaceholder: '筛选输出',
+    subtitle:
+      '控制台自动以 115200 bps 运行以获得可靠输出。烧录时使用工具栏中选择的波特率。',
+    info:
+      '启动串口监视器会将开发板重置到正常固件模式，以便查看 UART 输出。停止监视器后会自动重新进入引导加载器（stub）模式以便执行维护操作（烧录、分区工具等）。',
+    emptyState: '启动后，监视器输出会显示在此处。',
+  },
   dialogs: {
     connecting: '正在连接',
     littlefsBackup: 'LittleFS 备份',

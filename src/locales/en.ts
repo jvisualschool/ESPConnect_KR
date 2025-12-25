@@ -37,6 +37,27 @@
       'This browser does not support the Web Serial API. Use Chrome, Edge, or another Chromium-based browser.',
     serialMonitorClosed: 'Serial monitor closed - click Connect to re-enter maintenance mode.',
   },
+  serialMonitor: {
+    title: 'Serial Monitor',
+    status: {
+      live: 'Live',
+      stopped: 'Stopped',
+    },
+    actions: {
+      start: 'Start',
+      stop: 'Stop',
+      pause: 'Pause',
+      resume: 'Resume',
+      clear: 'Clear',
+      reset: 'Reset',
+    },
+    filterPlaceholder: 'Filter output',
+    subtitle:
+      'Console run at 115200 bps automatically for reliable output. Flashing uses the baud rate selected in the toolbar.',
+    info:
+      'Starting the serial monitor resets the board into normal firmware mode so you can view UART output. Stopping the serial monitor automatically re-enters bootloader (stub) mode for maintenance (flash, partition tools, etc.).',
+    emptyState: 'Monitor output will appear here once started.',
+  },
   dialogs: {
     connecting: 'Connecting',
     littlefsBackup: 'LittleFS Backup',
