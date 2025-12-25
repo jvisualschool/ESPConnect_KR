@@ -62,6 +62,18 @@
     apps: 'Connect to a device to inspect OTA application slots.',
     flash: 'Connect to your board to flash firmware or inspect registers.',
   },
+  deviceInfo: {
+    summary: {
+      flashClock: 'Flash & Clock',
+      featureSet: 'Feature Set',
+      capabilities: '{count} capabilities',
+      noFeatures: 'No features reported',
+      more: '+{count} more',
+      noOptionalCapabilities: 'No optional capabilities.',
+    },
+    crystal: 'Crystal {crystal}',
+    unknown: 'Unknown',
+  },
   language: {
     english: 'English',
     chinese: '简体中文',

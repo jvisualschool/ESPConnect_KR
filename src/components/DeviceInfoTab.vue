@@ -24,19 +24,21 @@
           <v-card class="device-summary-card" elevation="0" variant="flat" color="primary">
             <v-card-text class="device-summary-card__content">
               <div class="device-summary">
-                <div class="summary-block">
-                  <div class="summary-label">
-                    <v-icon size="40" class="me-2">mdi-memory</v-icon>
-                    Flash & Clock
-                  </div>
-                  <div class="summary-value">{{ details.flashSize || 'Unknown' }}</div>
-                  <div v-if="details.crystal" class="summary-meta">
-                    Crystal {{ details.crystal }}
-                  </div>
-                  <div v-if="primaryFacts.length" class="summary-list">
-                    <div v-for="fact in primaryFacts" :key="fact.label" class="summary-list__item">
-                      <v-icon size="16" class="me-1">{{ fact.icon || 'mdi-information-outline' }}</v-icon>
-                      <span>{{ fact.label }} : {{ fact.value }}</span>
+                  <div class="summary-block">
+                    <div class="summary-label">
+                      <v-icon size="40" class="me-2">mdi-memory</v-icon>
+                      {{ t('deviceInfo.summary.flashClock') }}
+                    </div>
+                    <div class="summary-value">
+                      {{ details.flashSize || t('deviceInfo.unknown') }}
+                    </div>
+                    <div v-if="details.crystal" class="summary-meta">
+                      {{ t('deviceInfo.crystal', { crystal: details.crystal }) }}
+                    </div>
+                    <div v-if="primaryFacts.length" class="summary-list">
+                      <div v-for="fact in primaryFacts" :key="fact.label" class="summary-list__item">
+                        <v-icon size="16" class="me-1">{{ fact.icon || 'mdi-information-outline' }}</v-icon>
+                        <span>{{ fact.label }} : {{ fact.value }}</span>
                     </div>
                   </div>
                 </div>
@@ -44,10 +46,12 @@
                 <div class="summary-block">
                   <div class="summary-label">
                     <v-icon size="40" class="me-2">mdi-lightning-bolt-outline</v-icon>
-                    Feature Set
+                    {{ t('deviceInfo.summary.featureSet') }}
                   </div>
                   <div class="summary-value ml-2">
-                    {{ hasFeatures ? `${details.features.length} capabilities` : 'No features reported' }}
+                    {{ hasFeatures
+                      ? t('deviceInfo.summary.capabilities', { count: details.features.length })
+                      : t('deviceInfo.summary.noFeatures') }}
                   </div>
 
                   <div class="summary-chips">
@@ -59,12 +63,12 @@
                       </v-chip>
                       <v-chip v-if="details.features.length > featurePreview.length"
                         class="summary-chip summary-chip--more" size="small" variant="outlined">
-                        +{{ details.features.length - featurePreview.length }} more
+                        {{ t('deviceInfo.summary.more', { count: details.features.length - featurePreview.length }) }}
                       </v-chip>
                     </template>
                     <div v-else class="summary-empty">
                       <v-icon size="16">mdi-eye-off-outline</v-icon>
-                      <span>No optional capabilities.</span>
+                      <span>{{ t('deviceInfo.summary.noOptionalCapabilities') }}</span>
                     </div>
                   </div>
                 </div>

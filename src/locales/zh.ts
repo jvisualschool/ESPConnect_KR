@@ -62,6 +62,18 @@
     apps: '连接设备以检查 OTA 应用槽。',
     flash: '连接你的板子以烧录固件或检查寄存器。',
   },
+  deviceInfo: {
+    summary: {
+      flashClock: 'Flash 与时钟',
+      featureSet: '特性集',
+      capabilities: '{count} 项功能',
+      noFeatures: '未报告任何特性',
+      more: '+{count} 更多',
+      noOptionalCapabilities: '没有可选功能。',
+    },
+    crystal: '晶振 {crystal}',
+    unknown: '未知',
+  },
   language: {
     english: '英语',
     chinese: '中文',
