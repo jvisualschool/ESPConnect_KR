@@ -38,26 +38,22 @@
           <v-icon start>mdi-close-circle</v-icon>
           {{ t('actions.disconnect') }}
         </v-btn>
-        <v-select v-model="selectedBaud" :items="baudrateOptions" :label="t('forms.baudRate')" density="compact" variant="outlined"
-          hide-details class="status-select"
+        <v-select v-model="selectedBaud" :items="baudrateOptions" :label="t('forms.baudRate')" density="compact"
+          variant="outlined" hide-details class="status-select"
           :disabled="busy || flashInProgress || maintenanceBusy || baudChangeBusy || monitorActive" />
         <v-menu offset-y>
           <template #activator="{ props }">
-            <v-btn variant="text" class="language-toggle-btn"  v-bind="props" :title="languageMenuTitle">
+            <v-btn variant="text" class="language-toggle-btn" v-bind="props" :title="languageMenuTitle">
               {{ currentLanguageLabel }}
               <v-icon>mdi-menu-down</v-icon>
             </v-btn>
           </template>
           <v-list>
-          <v-list-item
-            v-for="option in languageOptions"
-            :key="option.code"
-            :disabled="option.code === currentLanguage"
-            @click="selectLanguage(option.code)"
-          >
-            <v-list-item-title>{{ option.label }}</v-list-item-title>
-            <v-icon v-if="option.code === currentLanguage" size="16">mdi-check</v-icon>
-          </v-list-item>
+            <v-list-item v-for="option in languageOptions" :key="option.code"
+              :disabled="option.code === currentLanguage" @click="selectLanguage(option.code)">
+              <v-list-item-title>{{ option.label }}</v-list-item-title>
+              <v-icon v-if="option.code === currentLanguage" size="16">mdi-check</v-icon>
+            </v-list-item>
           </v-list>
         </v-menu>
         <span v-if="higherBaudrateAvailable">
@@ -74,8 +70,8 @@
         </span>
       </div>
       <v-spacer />
-        <v-btn :title="`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`" variant="text" icon size="small"
-          @click="toggleTheme">
+      <v-btn :title="`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`" variant="text" icon size="small"
+        @click="toggleTheme">
         <v-icon>{{ themeIcon }}</v-icon>
       </v-btn>
       <v-chip :color="connected ? 'success' : 'grey-darken-1'" class="text-capitalize" variant="elevated"
@@ -116,13 +112,8 @@
                 :loading="nvsState.loading" :status="nvsState.status" :error="nvsState.error" :result="nvsState.result"
                 :has-partition="hasNvsPartitionSelected" @select-partition="handleSelectNvsPartition"
                 @read-nvs="handleReadNvs" />
-            <DisconnectedState
-              v-else
-              icon="mdi-database-search"
-              :min-height="420"
-              :title="t('disconnected.defaultTitle')"
-              :subtitle="t('disconnected.nvs')"
-            />
+              <DisconnectedState v-else icon="mdi-database-search" :min-height="420"
+                :title="t('disconnected.defaultTitle')" :subtitle="t('disconnected.nvs')" />
             </v-window-item>
 
             <v-window-item value="spiffs">
@@ -140,13 +131,8 @@
                 @download-file="handleSpiffsDownloadFile" @view-file="handleSpiffsView"
                 @validate-upload="handleSpiffsUploadSelection" @upload-file="handleSpiffsUpload"
                 @delete-file="handleSpiffsDelete" @format="handleSpiffsFormat" @save="handleSpiffsSave" />
-              <DisconnectedState
-                v-else
-                icon="mdi-folder-key-outline"
-                :min-height="420"
-                :title="t('disconnected.defaultTitle')"
-                :subtitle="t('disconnected.spiffs')"
-              />
+              <DisconnectedState v-else icon="mdi-folder-key-outline" :min-height="420"
+                :title="t('disconnected.defaultTitle')" :subtitle="t('disconnected.spiffs')" />
             </v-window-item>
 
             <v-window-item value="littlefs">
@@ -170,13 +156,8 @@
                 @delete-file="handleLittlefsDelete" @format="handleLittlefsFormat" @save="handleLittlefsSave"
                 @navigate="handleLittlefsNavigate" @navigate-up="handleLittlefsNavigateUp"
                 @new-folder="handleLittlefsNewFolder" @reset-upload-block="handleLittlefsResetUploadBlock" />
-              <DisconnectedState
-                v-else
-                icon="mdi-alpha-l-circle-outline"
-                :min-height="420"
-                :title="t('disconnected.defaultTitle')"
-                :subtitle="t('disconnected.littlefs')"
-              />
+              <DisconnectedState v-else icon="mdi-alpha-l-circle-outline" :min-height="420"
+                :title="t('disconnected.defaultTitle')" :subtitle="t('disconnected.littlefs')" />
             </v-window-item>
 
             <v-window-item value="fatfs">
@@ -195,25 +176,15 @@
                 @restore="handleFatfsRestore" @download-file="handleFatfsDownloadFile" @view-file="handleFatfsView"
                 @validate-upload="handleFatfsUploadSelection" @upload-file="handleFatfsUpload"
                 @delete-file="handleFatfsDelete" @format="handleFatfsFormat" @save="handleFatfsSave" />
-              <DisconnectedState
-                v-else
-                icon="mdi-alpha-f-circle-outline"
-                :min-height="420"
-                :title="t('disconnected.defaultTitle')"
-                :subtitle="t('disconnected.fatfs')"
-              />
+              <DisconnectedState v-else icon="mdi-alpha-f-circle-outline" :min-height="420"
+                :title="t('disconnected.defaultTitle')" :subtitle="t('disconnected.fatfs')" />
             </v-window-item>
 
             <v-window-item value="apps">
               <AppsTab v-if="connected" :apps="appPartitions" :active-slot-id="activeAppSlotId"
                 :active-summary="appActiveSummary" :loading="appMetadataLoading" :error="appMetadataError" />
-              <DisconnectedState
-                v-else
-                icon="mdi-application-cog-outline"
-                :min-height="420"
-                :title="t('disconnected.defaultTitle')"
-                :subtitle="t('disconnected.apps')"
-              />
+              <DisconnectedState v-else icon="mdi-application-cog-outline" :min-height="420"
+                :title="t('disconnected.defaultTitle')" :subtitle="t('disconnected.apps')" />
             </v-window-item>
 
             <v-window-item value="flash">
@@ -243,19 +214,14 @@
                 @download-used-flash="handleDownloadUsedFlash" @cancel-flash="handleCancelFlash"
                 @erase-flash="handleEraseFlash" @cancel-download="handleCancelDownload"
                 @select-register="handleSelectRegister" />
-              <DisconnectedState
-                v-else
-                icon="mdi-chip"
-                :min-height="420"
-                :title="t('disconnected.defaultTitle')"
-                :subtitle="t('disconnected.flash')"
-              />
+              <DisconnectedState v-else icon="mdi-chip" :min-height="420" :title="t('disconnected.defaultTitle')"
+                :subtitle="t('disconnected.flash')" />
             </v-window-item>
             <v-window-item value="console">
               <SerialMonitorTab :monitor-text="monitorText" :monitor-active="monitorActive"
                 :monitor-error="monitorError" :can-start="canStartMonitor" :can-command="canIssueMonitorCommands"
                 @start-monitor="startMonitor" @stop-monitor="stopMonitor()" @clear-monitor="clearMonitorOutput"
-                @reset-board="resetBoard" />
+                @reset-board="enterUserFirmware" />
             </v-window-item>
 
             <v-window-item value="log">
@@ -3453,10 +3419,6 @@ type LoadAppMetadataOptions = {
   force?: boolean;
 };
 
-type ResetOptions = {
-  silent?: boolean;
-};
-
 type StopMonitorOptions = {
   closeConnection?: boolean;
   returnToMaintenance?: boolean;
@@ -5453,7 +5415,7 @@ async function startMonitor() {
   }
   if (!monitorAutoResetPerformed) {
     appendLog('Auto-resetting board before starting serial monitor output.', '[ESPConnect-Debug]');
-    await resetBoard({ silent: true });
+    await enterUserFirmware();
     monitorAutoResetPerformed = true;
   }
   monitorError.value = null;
@@ -5577,21 +5539,15 @@ async function stopMonitor(options: StopMonitorOptions = {}) {
 }
 
 // Pulse RTS/DTR to reset the target board.
-async function resetBoard(options: ResetOptions = {}) {
-  const { silent = false } = options;
+async function enterUserFirmware() {
   const currentLoader = loader.value;
   if (!currentLoader) {
     appendLog('Cannot reset: loader not available.', '[ESPConnect-Warn]');
     return;
   }
   try {
-    if (!silent) {
-      appendLog('Resetting board (toggle RTS).', '[ESPConnect-Debug]');
-    }
-    await currentLoader.setDTR(false);
-    await currentLoader.setRTS(true);
-    await currentLoader.sleep(120);
-    await currentLoader.setRTS(false);
+    appendLog('Board Hard Reset', '[ESPConnect-Debug]');
+    await currentLoader.hardReset(false);
   } catch (err) {
     appendLog(`Board reset failed: ${formatErrorMessage(err)}`, '[error]');
   }
