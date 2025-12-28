@@ -495,7 +495,7 @@ export const ESP32_DEFAULT_CONFIG: SpiffsConfig = {
   pageSize: 256,
   blockSize: 4096,
   objNameLength: 32,
-  objMetaLength: 0,
+  objMetaLength: 4,
   objIdSize: 2,
   spanIxSize: 2,
   pageIndexSize: 2,
