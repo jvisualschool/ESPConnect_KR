@@ -26,6 +26,9 @@ function getBrowserLocale(): SupportedLocale {
 
   const locales = navigator.languages?.length ? navigator.languages : [navigator.language];
   for (const locale of locales) {
+    if (typeof locale !== 'string' || !locale) {
+      continue;
+    }
     const lang = locale.substring(0, 2).toLowerCase();
     if (supportedLocales.includes(lang as SupportedLocale)) {
       return lang as SupportedLocale;
