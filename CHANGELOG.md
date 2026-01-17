@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.6-preview
+## 1.1.6
 ### Improvement
 - Serial Monitor now lets you send text input, including Ctrl+C, suggest by ator1811 ([issue #90](https://github.com/thelastoutpostworkshop/ESPConnect/issues/90)).
 - Flash tools can erase a selected partition or a custom flash region without wiping the entire chip ([issue #109](https://github.com/thelastoutpostworkshop/ESPConnect/issues/109)).
