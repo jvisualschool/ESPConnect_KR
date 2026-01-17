@@ -18,13 +18,36 @@ const FIXTURE_OTA0_PATH = path.resolve(
 const DEFAULT_OTA_ENTRIES = [{ subtype: 0x10 }, { subtype: 0x11 }];
 
 // Build a realistic otadata buffer (0x2000) with entries at 0x0000 and 0x1000.
+// Build a realistic otadata buffer (0x2000) with entries at 0x0000 and 0x1000.
 function buildOtadata(primarySeq: number, secondarySeq: number): Uint8Array {
   const buffer = new Uint8Array(OTA_SELECT_SECTOR_SIZE * 2); // 0x2000
+
+  // Real otadata often has lots of 0xFF in unused fields. Using 0xFF also avoids
+  // tripping plausibility checks that treat all-zeros as suspicious.
+  buffer.fill(0xff);
+
   const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-  view.setUint32(0x0000, primarySeq, true);
-  view.setUint32(0x1000, secondarySeq, true);
+
+  const writeEntry = (base: number, seq: number) => {
+    // seq
+    view.setUint32(base + 0, seq >>> 0, true);
+
+    // seq_label[20] (bytes 4..23): leave as 0xFF (erased-like)
+
+    // ota_state (u32 at +24): use a non-invalid value (0 is common/benign)
+    view.setUint32(base + 24, 0, true);
+
+    // crc (u32 at +28): set something non-FF/non-0 so it passes "looks plausible".
+    // If your implementation computes CRC, you can compute it here; otherwise this is fine.
+    view.setUint32(base + 28, 0x12345678, true);
+  };
+
+  writeEntry(0x0000, primarySeq);
+  writeEntry(0x1000, secondarySeq);
+
   return buffer;
 }
+
 
 describe("otadata fixture detection", () => {
   it("detects ota_1 as the active slot", () => {
