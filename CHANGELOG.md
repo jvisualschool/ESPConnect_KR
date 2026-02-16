@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.1.9-preview
+
 ## 1.1.8
 ### Improvement
 - Fixed LittleFS not detected ([issue #132](https://github.com/thelastoutpostworkshop/ESPConnect/issues/132)).
