@@ -2,6 +2,7 @@
 
 ## 1.1.8-preview
 ### Improvement
+- Fixed LittleFS not detected ([issue #132](https://github.com/thelastoutpostworkshop/ESPConnect/issues/132)).
 - Session log now records chip pkgVersion/chipRevision/chip ID values.
 
 ### Documentation
