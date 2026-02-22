@@ -1,124 +1,115 @@
 [<img src="https://github.com/thelastoutpostworkshop/images/blob/main/ESPConnect-github.png">](https://youtu.be/-nhDKzBxHiI)
-# ESPConnect
+# ESPConnect (KR)
 <a href="https://www.buymeacoffee.com/thelastoutpostworkshop" target="_blank">
 <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee">
 </a>
 
-ESPConnect is a browser-based control center for ESP32- and ESP8266-class boards. It runs entirely inside a modern Chromium browser so you can inspect hardware details, manage SPIFFS, Fat, LittleFS files, back up flash, and deploy firmware without installing desktop software. It is based on Jason2866's [WebSerial ESPTool](https://github.com/Jason2866/WebSerial_ESPTool/tree/development).
-- [Tutorial](https://youtu.be/-nhDKzBxHiI)
+ESPConnect는 ESP32 및 ESP8266 보드를 위한 브라우저 기반 제어 센터입니다. 최신 Chromium 브라우저 내에서 완전히 실행되므로 데스크톱 소프트웨어를 설치하지 않고도 하드웨어 세부 정보를 검사하고 SPIFFS, FAT, LittleFS 파일을 관리하며 플래시를 백업하고 펌웨어를 배포할 수 있습니다. 이 프로젝트는 Jason2866의 [WebSerial ESPTool](https://github.com/Jason2866/WebSerial_ESPTool/tree/development)을 기반으로 합니다.
+- [튜토리얼 (영어)](https://youtu.be/-nhDKzBxHiI)
 
-## What You Need
-- Chrome, Edge, Brave, Arc, or another Chromium browser based on version 89 or newer.  
-- An ESP32, ESP32-C3, ESP32-S2, ESP32-S3, ESP32-C6, ESP32-H2, ESP32-C5, ESP32-P4, or ESP8266 board connected over USB.  
-- A USB cable with data lines. If your board lacks automatic reset wiring, the app walks you through entering the bootloader manually.
+## 준비물
+- Chrome, Edge, Brave, Arc 등 버전 89 이상의 Chromium 기반 브라우저.
+- USB로 연결된 ESP32, ESP32-C3, ESP32-S2, ESP32-S3, ESP32-C6, ESP32-H2, ESP32-C5, ESP32-P4 또는 ESP8266 보드.
+- 데이터 전송이 가능한 USB 케이블. 보드에 자동 리셋 회로가 없는 경우, 앱이 부트로더 모드로 수동 진입하는 방법을 안내합니다.
 
-## Quick Start
-1. Open [ESPConnect](https://thelastoutpostworkshop.github.io/ESPConnect/).  
-2. Click **Connect** and choose your device when the browser asks for permission.  
-3. After the handshake completes, the navigation drawer unlocks every tool: Device Info, Partitions, SPIFFS, Apps, Flash, Console, and Logs.  
-4. Use **Disconnect** whenever you want to free the USB port for another application.
+## 빠른 시작
+1. [ESPConnect KR](https://jvisualschool.github.io/ESPConnect_KR/)을 엽니다. (또는 로컬 서버 이용)
+2. **연결**을 클릭하고 브라우저에서 권한을 요청할 때 장치를 선택합니다.
+3. 핸드셰이크가 완료되면 내비게이션 드로어에서 기기 정보, 파티션, SPIFFS, 앱, 플래시, 콘솔 및 로그와 같은 모든 도구를 사용할 수 있습니다.
+4. 다른 애플리케이션에서 USB 포트를 사용해야 할 때는 **연결 해제**를 사용하세요.
 
+## 주요 기능 개요
 
-## Feature Overview
+### 기기 및 플래시 정보
+- **기기 정보 탭** – 칩 제품군, 리비전, MAC 주소, 플래시 크기, 크리스탈 주파수, 기능 및 큐레이션된 팩트 그룹의 실시간 요약을 제공합니다. 연결된 장치가 없으면 "연결된 기기 없음" 카드가 자동으로 표시됩니다.
+- **파티션 탭** – 각 파티션 항목의 그래픽 맵과 상세 테이블(크기, 오프셋 포함)을 제공하며, 플래싱 전 레이아웃 결정을 재확인할 수 있도록 사용되지 않은 플래시 공간도 보여줍니다.
 
-### Device & flash awareness
-- **Device Info tab** – live summary of chip family, revision, MAC address, flash size, crystal frequency, capabilities, and curated fact groups. A “No device connected” card appears automatically when nothing is attached.  
-- **Partitions tab** – graphical map plus a detailed table of every partition entry, including sizes, offsets, and unused flash so you can double-check layout decisions before flashing.
+### 파일 시스템 관리자 (SPIFFS, LittleFS, FATFS 지원)
+- 즉각적인 텍스트 필터링과 페이지 번호 제어를 통해 파일을 탐색합니다.
+- 파일 선택기 또는 드래그 앤 드롭으로 업로드할 수 있으며, 앱은 전송 전에 사용 가능한 공간을 확인하고 크기가 초과된 파일을 차단합니다.
+- 전체 파일 시스템 백업을 실행하거나, 이미지를 복구하거나, 파티션을 포맷할 수 있습니다 (백업 확인 후).
+- 변경 사항을 로컬에서 스테이징한 후, 만족스러울 때 **플래시에 저장**을 클릭하여 기기에 적용합니다.
+- 브라우저를 벗어나지 않고 UTF-8 텍스트(JSON, HTML, 로그 등) 미리보기, 이미지 인라인 렌더링, 오디오 형식(MP3, WAV, OGG/Opus, AAC/M4A, FLAC, WebM) 청취가 가능합니다.
+- 개별 파일을 다운로드하거나 삭제할 수 있으며, 사용됨/여유/전체 바이트를 보여주는 사용량 게이지를 확인할 수 있습니다.
 
-### File system manager (supports SPIFFS, LittleFS and FATFS)
-- Browse the files with instant text filtering, pagination controls.  
-- Upload by file picker or drag-and-drop; the app checks available space and blocks oversized files before they transfer.  
-- Run full file system backups, restore an image, or format the partition (after confirming you have a backup).  
-- Stage edits locally, then push them down with **Save to Flash** once you are satisfied.  
-- Preview UTF‑8 text (JSON, HTML, logs, etc.), render images inline, and listen to audio formats such as MP3, WAV, OGG/Opus, AAC/M4A, FLAC, and WebM—all without leaving the browser.  
-- Download or delete individual files, and keep an eye on usage gauges that show used, free, and total bytes.
+### OTA 슬롯 정보
+- **앱 탭** – 애플리케이션 슬롯/OTA 파티션을 검사합니다. 현재 실행 중인 펌웨어와 다음에 준비된 펌웨어가 무엇인지 알 수 있도록 빌드 메타데이터, 크기 및 기타 식별 세부 정보와 함께 활성 슬롯을 확인합니다.
 
-### OTA slot insights
-- **Apps tab** – inspect application slots/OTA partitions. See which slot is active along with build metadata, sizes, and other identifying details so you always know what firmware is currently running and what is staged next.
+### 플래시 및 유지 관리 워크스페이스
+- **펌웨어 플래싱** – 임의의 `.bin`을 로드하고, 공통 오프셋 프리셋에서 선택하며, 선택적으로 칩 전체를 지우고 상세 대화 상자를 통해 진행 상황을 모니터링합니다.
+- **백업 및 다운로드** – 개별 파티션, 전체 파티션 테이블, 플래시의 사용된 영역만 또는 사용자가 지정한 임의의 영역을 캡처합니다.
+- **무결성 확인** – 오프셋과 길이를 제공하여 기기에 저장된 내용의 빠른 검증을 위한 MD5 해시를 계산합니다.
+- **레지스터 접근** – 주소와 설명이 포함된 통합 가이드를 사용하여 하드웨어 레지스터를 직접 읽거나 씁니다.
+- **제어 작업** – 긴 전송 취소, 백업 중지, 플래시 삭제 또는 스테이징된 SPIFFS 변경 사항 저장을 명확한 확인 및 진행 표시기와 함께 수행합니다.
 
-### Flash & maintenance workspace
-- **Flash Firmware** – load any `.bin`, pick from common offset presets, optionally erase the entire chip, and watch progress through detailed dialogs.  
-- **Backups & downloads** – capture individual partitions, the whole partition table, only the used areas of flash, or arbitrary regions you specify.  
-- **Integrity checks** – supply an offset and length to compute MD5 hashes for quick validation of what is stored on the device.  
-- **Register access** – read or write hardware registers directly using the integrated guide of addresses and descriptions.  
-- **Control actions** – cancel long transfers, stop backups, erase flash, or save staged SPIFFS changes with clear confirmations and progress indicators.
+### 실시간 모니터링 및 이력
+- **시리얼 모니터 탭** – UART 출력을 스트리밍하고, 명령(Ctrl+C 포함)을 보내고, 콘솔을 지우고, 보드 레이트를 변경하거나 브라우저에서 바로 보드를 리셋합니다.
+- **세션 로그 탭** – 연결, 플래싱, 다운로드 및 경고의 시간순 기록입니다. 깨끗한 상태를 원할 때 언제든지 지울 수 있습니다.
 
-### Live monitoring & history
-- **Serial Monitor tab** – stream UART output, send commands (including Ctrl+C), clear the console, change baud rate, or reset the board right from the browser.  
-- **Session Log tab** – chronological ledger of connects, flashes, downloads, and warnings. Clear it whenever you want a clean slate.
+### NVS 인스펙터 (🧪 실험적 기능)
+ESPConnect에는 브라우저에서 직접 ESP32의 NVS(Non-Volatile Storage) 파티션 내용을 **읽고 시각화**할 수 있는 **실험적인 NVS 인스펙터**가 포함되어 있습니다.
 
-### NVS Inspector (🧪 Experimental)
+#### 주요 기능
+- NVS 형식(**v1 / v2**) 자동 감지
+- 네임스페이스 및 키 목록 표시
+- 일반적인 값 유형(정수, 문자열, blob) 디코딩
+- 부동 소수점(float/double) 휴리스틱 디코딩
+- 페이지 상태, 순서 번호, CRC 상태 및 항목 사용량 표시
+- 페이지 레이아웃 및 점유 상태 시각화
 
-ESPConnect includes an **experimental NVS Inspector** that lets you **read and visualize** the contents of an ESP32’s NVS (Non-Volatile Storage) partition directly from the browser.
+#### 제한 사항
+- **읽기 전용** (편집 또는 쓰기 불가)
+- 파싱은 ESP-IDF 동작의 리버스 엔지니어링을 기반으로 하며 모든 예외 케이스를 처리하지 못할 수 있습니다.
+- 일부 값 유형은 원시 blob으로 표시될 수 있습니다.
+- 손상되었거나 부분적으로 지워진 페이지는 경고를 생성할 수 있습니다.
 
- What it can do
-- Detect NVS format (**v1 / v2**) automatically
-- List namespaces and keys
-- Decode common value types (integers, strings, blobs)
-- Heuristically decode floats and doubles
-- Show page state, sequence numbers, CRC status, and entry usage
-- Visualize page layout and occupancy
+#### 상태
+> ⚠️ 이 기능은 **실험적**이며 **검사 및 디버깅 용도**로만 제공됩니다.
+> 출력 결과는 복구 또는 포렌식 용도의 공식적인 자료로 간주되어서는 안 됩니다.
 
- Limitations
-- **Read-only** (no editing or writing)
-- Parsing is based on reverse-engineering ESP-IDF behavior and may not handle all edge cases
-- Some value types may be shown as raw blobs
-- Corrupt or partially erased pages may produce warnings
+### 안정 버전 vs 프리뷰 버전
+ESPConnect는 두 가지 변체로 게시됩니다:
 
-Status
-> ⚠️ This feature is **experimental** and intended for **inspection and debugging only**.  
-> Output should not be considered authoritative for recovery or forensic use.
+- **안정 버전 (권장)**
+👉 https://thelastoutpostworkshop.github.io/ESPConnect/
+태그된 릴리스에서 빌드되며 일상적인 사용을 위한 버전입니다.
 
-Feedback and test reports are very welcome.
+- **프리뷰 버전 (개발 빌드)**
+👉 https://thelastoutpostworkshop.github.io/ESPConnect/preview/
+`main` 브랜치에서 자동 빌드되며 새로운 수정 사항, 기능, 실험 또는 파괴적 변경 사항이 포함될 수 있습니다. [현재 프리뷰 변경 사항 보기](CHANGELOG.md)
 
-## Stable vs Preview Builds
+### 팁 및 문제 해결
+- 자동 부팅 진입에 실패하면 **BOOT**를 누른 채로 **RESET**을 살짝 누르고, **연결**을 클릭하는 동안 **BOOT**를 계속 누르고 있다가 ESP-ROM 배너가 보이면 떼세요.
+- 한 번에 하나의 애플리케이션만 USB 시리얼 브리지를 사용할 수 있습니다. 연결하기 전에 Arduino IDE, PlatformIO 또는 다른 도구를 닫으세요.
+- 연결 후에도 보드 레이트를 변경할 수 있습니다. 전송이 멈추면 460800 또는 115200 bps로 낮추세요.
+- 플래싱이나 다운로드를 취소하면 안전하게 일시 중지됩니다. 준비가 되면 다시 실행하세요.
 
-ESPConnect is published in two variants:
+#### ESP8266 호환성
+> ESP8266 장치는 연결할 수 있지만 지원이 매우 제한적입니다.
+파티션 테이블을 읽거나 SPIFFS/LittleFS에 접근할 수 없으며, ESP32에서 사용 가능한 고급 기능은 ESP8266에 구현되어 있지 않습니다.
 
-- **Stable (recommended)**  
-  👉 https://thelastoutpostworkshop.github.io/ESPConnect/  
-  This version is built from tagged releases and is intended for everyday use.
-
-- **Preview (development build)**  
-  👉 https://thelastoutpostworkshop.github.io/ESPConnect/preview/  
-  This version is automatically built from the `main` branch and may include new fix, features, experiments, or breaking changes. [View current preview changes](CHANGELOG.md)
-
-> ⚠️ The preview build is provided for testing and feedback only.  
-> If you encounter issues, please report them along with whether they occurred on **stable** or **preview**.
-
-## Tips & Troubleshooting
-- If automatic boot entry fails, hold **BOOT**, tap **RESET**, keep holding **BOOT** while clicking **Connect**, then release when you see the ESP-ROM banner.  
-- Only one application can use the USB serial bridge at a time. Close Arduino IDE, PlatformIO, or other tools before connecting.  
-- You can change baud rate even after connecting. If transfers stall, drop to 460800 or 115200 bps.  
-- Cancelling a flash or download pauses safely. Simply run it again when you’re ready. 
-### ESP8266 Compatibility
->ESP8266 devices can connect, but support is very limited.
-The tool cannot read partition tables or access SPIFFS/LittleFS, and advanced features available on ESP32 are not implemented for ESP8266.
-## Contributing
-ESPConnect is open source and contributions are welcome.
-If you want to run ESPConnect locally, work on the codebase, or submit a pull request, please see:
-
+## 기여하기
+ESPConnect는 오픈 소스이며 기여를 환영합니다.
+로컬에서 실행하거나 코드 작업을 하거나 풀 리퀘스트를 제출하려면 다음을 참조하세요:
 ➡️ **[CONTRIBUTING.md](./CONTRIBUTING.md)**
-That document contains development setup instructions, project conventions, and contribution guidelines.
 
-## Running ESPConnect Locally
+## 로컬에서 ESPConnect 실행하기
+ESPConnect는 **순수 브라우저 기반 웹 애플리케이션**입니다. 백엔드나 설치가 필요 없으며 모든 작업은 Web Serial / WebUSB를 사용하여 브라우저에서 직접 수행됩니다.
 
-ESPConnect is a **pure in-browser web application** — no backend, no installation required, and all operations happen directly in your browser using Web Serial / WebUSB.
+### 1. 데스크톱 앱으로 실행 (Electron)
+[최신 릴리스](https://github.com/thelastoutpostworkshop/ESPConnect/releases/latest)에서 해당 플랫폼용 설치 지침을 따르세요.
 
-### 1. Run as a Desktop App (Electron)
-Follow installation instructions for your platform in the [latest release](https://github.com/thelastoutpostworkshop/ESPConnect/releases/latest) 
-
-### 2. Run ESPConnect via Docker
-
+### 2. Docker를 통해 실행
 ```bash
 docker build -t espconnect .
 docker run --rm -p 8080:80 espconnect
 ```
-### 3. Run the Built Version Locally (Static Server)
-Follow instructions in the [latest release](https://github.com/thelastoutpostworkshop/ESPConnect/releases/latest) 
 
-## Privacy & Security
-ESPConnect runs fully in your browser—there is no backend, account, or telemetry. Firmware files, backups, and diagnostics stay local and only move when you download them yourself. Always flash firmware from trusted sources.
+### 3. 빌드된 버전을 로컬에서 실행 (학습용 서버)
+[최신 릴리스](https://github.com/thelastoutpostworkshop/ESPConnect/releases/latest)의 지침을 따르세요.
 
-## License
-ESPConnect is released under the MIT License. See [LICENSE](LICENSE) for the full text.
+## 개인정보 보호 및 보안
+ESPConnect는 브라우저에서 전적으로 실행됩니다. 백엔드, 계정 또는 원격 측정(telemetry)이 없습니다. 펌웨어 파일, 백업 및 진단 데이터는 로컬에 유지되며 사용자가 직접 다운로드할 때만 이동합니다. 항상 신뢰할 수 있는 소스의 펌웨어를 플래싱하세요.
+
+## 라이선스
+ESPConnect는 MIT 라이선스로 배포됩니다. 전체 텍스트는 [LICENSE](LICENSE)를 참조하세요.
