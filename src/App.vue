@@ -4312,6 +4312,7 @@ const languageOptions = computed(() => [
   { code: 'en', label: t('language.english') },
   { code: 'fr', label: t('language.french') },
   { code: 'zh', label: t('language.chinese') },
+  { code: 'ko', label: t('language.korean') },
 ]);
 const currentLanguageLabel = computed(() =>
   languageOptions.value.find(lang => lang.code === currentLanguage.value)?.label ??
